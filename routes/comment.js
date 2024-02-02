@@ -20,7 +20,10 @@ router.post("/", function (req, res, next) {
 router.get("/:id", function (req, res, next) {
     Comment.findById(req.params.id)
         .then((data) => {
-            // if (!data) return next(err);
+            if (!data)
+                return res
+                    .status(404)
+                    .json({ message: "댓글을 찾을 수 없습니다." });
             res.json(data);
         })
         .catch((err) => {
@@ -47,6 +50,10 @@ router.put("/:id", function (req, res, next) {
     console.log("update", commentId, updatedData);
     Comment.findByIdAndUpdate(commentId, updatedData)
         .then((data) => {
+            if (!data)
+                return res
+                    .status(404)
+                    .json({ message: "댓글을 찾을 수 없습니다." });
             res.json(data);
         })
         .catch((err) => {
@@ -61,6 +68,10 @@ router.delete("/:id", function (req, res, next) {
     console.log("delete", req.params.id);
     Comment.findByIdAndDelete(commentId)
         .then((data) => {
+            if (!data)
+                return res
+                    .status(404)
+                    .json({ message: "댓글을 찾을 수 없습니다." });
             res.json(data);
         })
         .catch((err) => {
