@@ -82,7 +82,7 @@ router.delete("/:id", function (req, res, next) {
 });
 
 // 보드의 댓글들 조회
-router.get("/:id/comments", function (req, res, next) {
+router.get("/:id/comment", function (req, res, next) {
     const boardId = req.params.id;
     Comment.find({ boardId: boardId })
         .then((data) => {
@@ -93,4 +93,20 @@ router.get("/:id/comments", function (req, res, next) {
         });
 });
 
+// 추가
+router.post("/:id/comment", function (req, res, next) {
+    const boardId = req.params.id;
+    Board.findById(boardId).then((data) =>
+        Comment.create({
+            ...req.body,
+            boardId: data._id,
+        })
+            .then((comment) => {
+                res.json(comment);
+            })
+            .catch((error) => {
+                console.error(error);
+            })
+    );
+});
 module.exports = router;
