@@ -81,6 +81,7 @@ router.delete("/:id", function (req, res, next) {
         });
 });
 
+// 보드의 댓글들 조회
 router.get("/:id/comments", function (req, res, next) {
     const boardId = req.params.id;
     Comment.find({ boardId: boardId })
