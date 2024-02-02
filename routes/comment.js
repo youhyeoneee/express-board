@@ -2,18 +2,24 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 
+let Board = require("../model/Board");
 let Comment = require("../model/Comment");
 
 // 추가
-router.post("/", function (req, res, next) {
-    console.log(req.body);
-    Comment.create(req.body)
-        .then((data) => {
-            res.json(data);
+router.post("/:boardId", function (req, res, next) {
+    const boardId = req.params.boardId;
+    Board.findById(boardId).then((data) =>
+        Comment.create({
+            ...req.body,
+            boardId: data._id,
         })
-        .catch((err) => {
-            return next(err);
-        });
+            .then((comment) => {
+                res.json(comment);
+            })
+            .catch((error) => {
+                console.error(error);
+            })
+    );
 });
 
 // id로 조회
@@ -31,7 +37,7 @@ router.get("/:id", function (req, res, next) {
         });
 });
 
-// 조회
+// 모든 댓글 조회
 router.get("/", function (req, res, next) {
     Comment.find()
         .then((data) => {
