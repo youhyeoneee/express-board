@@ -5,12 +5,17 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+// const cors = require("cors");
+
+dotenv.config();
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 const boardRouter = require("./routes/board");
 const birdsRouter = require("./routes/birds");
 const commentRouter = require("./routes/comment");
+const movieRouter = require("./routes/movie");
+const todoRouter = require("./routes/todo");
 
 var app = express();
 
@@ -25,6 +30,8 @@ app.use("/users", usersRouter);
 app.use("/board", boardRouter);
 app.use("/birds", birdsRouter);
 app.use("/comment", commentRouter);
+app.use("/movie", movieRouter);
+app.use("/todo", todoRouter);
 
 app.get("/sample", function (req, res) {
     res.send("Sample");
@@ -63,7 +70,7 @@ mongoose
         useNewUrlParser: true,
     })
     .then((resp) => {
-        console.log(resp);
+        // console.log(resp);
         console.log("SUCCESS CONNECTION");
     })
     .catch((err) => console.log(err));
