@@ -5,13 +5,37 @@ const Todo = require("../model/Todo.js");
 
 // 조회
 router.get("/", function (req, res, next) {
-    Todo.find()
-        .then((data) => {
-            res.json(data);
+    const search = req.query.search;
+
+    if (search) {
+        console.log("검색", search);
+
+        const regex = (pattern) => new RegExp(`.*${pattern}.*`);
+        const searchRegex = regex(search); // .*{search}.*
+
+        Todo.find({
+            $or: [{ content: { $regex: searchRegex } }],
         })
-        .catch((err) => {
-            return next(err);
-        });
+            .then((data) => {
+                if (!data)
+                    return res
+                        .status(404)
+                        .json({ message: "투두를 찾을 수 없습니다." });
+                res.json(data);
+            })
+            .catch((err) => {
+                return next(err);
+            });
+    } else {
+        console.log("전체 조회");
+        Todo.find()
+            .then((data) => {
+                res.json(data);
+            })
+            .catch((err) => {
+                return next(err);
+            });
+    }
 });
 
 // id로 조회
