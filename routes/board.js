@@ -17,6 +17,13 @@ router.get("/", function (req, res, next) {
 
 // id로 조회
 router.get("/:id", function (req, res, next) {
+    if (req.session.boardPath) {
+        req.session.boardPath.push(req.params.id);
+    } else {
+        req.session.boardPath = [req.params.id];
+    }
+
+    console.log("boardPath" + req.session.boardPath);
     Board.findById(req.params.id)
         .then((data) => {
             if (!data)

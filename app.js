@@ -6,6 +6,7 @@ var logger = require("morgan");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 // const cors = require("cors");
+const session = require("express-session");
 
 dotenv.config();
 
@@ -25,6 +26,33 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || "<my-secret>",
+        resave: true,
+        saveUninitialized: true,
+        cookie: {
+            httpOnly: true,
+            secure: false,
+        },
+    })
+);
+
+// 위치 중요 next 꼭 하기
+app.use(function (req, res, next) {
+    if (req.path != "/favicon.ico") {
+        if (req.session.trackingUser) {
+            req.session.trackingUser.push(req.path);
+        } else {
+            req.session.trackingUser = [req.path];
+        }
+    }
+
+    console.log("trackingUser : ", req.session.trackingUser);
+
+    next();
+});
+
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/board", boardRouter);
@@ -32,7 +60,6 @@ app.use("/birds", birdsRouter);
 app.use("/comment", commentRouter);
 app.use("/movie", movieRouter);
 app.use("/todo", todoRouter);
-
 app.get("/sample", function (req, res) {
     res.send("Sample");
 });
