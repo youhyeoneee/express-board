@@ -56,13 +56,20 @@ router.get("/:id", function (req, res, next) {
 // 추가
 router.post("/", function (req, res, next) {
     console.log(req.body);
-    Todo.create(req.body)
-        .then((data) => {
-            res.json(data);
-        })
-        .catch((err) => {
-            return next(err);
-        });
+    const authToken = req.cookies.authToken;
+    console.log("authToken ", authToken);
+
+    if (authToken) {
+        Todo.create(req.body)
+            .then((data) => {
+                res.json(data);
+            })
+            .catch((err) => {
+                return next(err);
+            });
+    } else {
+        res.status(401).send("Bad Request 로그인이 필요합니다.");
+    }
 });
 
 // 수정
