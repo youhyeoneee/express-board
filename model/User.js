@@ -10,19 +10,28 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         validate: [isEmail, "올바른 이메일 형식이 아닙니다."],
     },
+    nickname: {
+        type: String,
+        required: [true, "닉네임을 입력하여 주세요."],
+        unique: true,
+    },
     password: {
         type: String,
         required: [true, "비밀번호가 입력되어야 합니다."],
     },
 });
 
-userSchema.statics.signUp = async function (email, password) {
+userSchema.statics.signUp = async function (email, nickname, password) {
     const salt = await bcrypt.genSalt();
     console.log(salt);
 
     try {
         const hashedPassword = await bcrypt.hash(password, salt);
-        const user = await this.create({ email, password: hashedPassword });
+        const user = await this.create({
+            email,
+            nickname,
+            password: hashedPassword,
+        });
 
         return {
             _id: user._id,
@@ -35,7 +44,6 @@ userSchema.statics.signUp = async function (email, password) {
 
 userSchema.statics.login = async function (email, password) {
     const user = await this.findOne({ email });
-
     if (user) {
         const auth = await bcrypt.compare(password, user.password);
 

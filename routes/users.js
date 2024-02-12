@@ -17,9 +17,9 @@ router.get("/", function (req, res, next) {
 
 router.post("/signup", async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, nickname, password } = req.body;
         console.log(req.body);
-        const user = await User.signUp(email, password);
+        const user = await User.signUp(email, nickname, password);
         res.status(201).json(user);
     } catch (err) {
         console.error(err);
@@ -30,6 +30,7 @@ router.post("/signup", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
     try {
+        console.log(req.body);
         const { email, password } = req.body;
         const user = await User.login(email, password);
         const tokenMaxAge = 60 * 60 * 24 * 3;
@@ -51,7 +52,7 @@ router.post("/login", async (req, res, next) => {
     }
 });
 
-router.post("/logout", async (req, res, next) => {
+router.all("/logout", async (req, res, next) => {
     try {
         const { email, password } = req.body;
         const user = await User.login(email, password);
@@ -65,8 +66,7 @@ router.post("/logout", async (req, res, next) => {
             expires: new Date(Date.now()),
         });
 
-        console.log(user);
-        res.status(201).json(user);
+        res.json({ message: "로그아웃 완료" });
     } catch (err) {
         console.log(err);
         res.status(400);
