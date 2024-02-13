@@ -54,12 +54,17 @@ router.post("/login", async (req, res, next) => {
 
 router.all("/logout", async (req, res, next) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.login(email, password);
-        const tokenMaxAge = 60 * 60 * 24 * 3;
-        const token = createToken(user, tokenMaxAge);
+        let token;
+        if (req.body.password) {
+            const { email, password } = req.body;
+            const user = await User.login(email, password);
+            const tokenMaxAge = 60 * 60 * 24 * 3;
+            token = createToken(user, tokenMaxAge);
 
-        user.token = token;
+            user.token = token;
+        } else if (req.body.token) {
+            token = req.body.token;
+        }
 
         res.cookie("authToken", token, {
             httpOnly: true,
