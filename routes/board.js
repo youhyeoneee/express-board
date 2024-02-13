@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { verifyToken } = require("../utils/auth");
 
 let Board = require("../model/Board.js");
 const Comment = require("../model/Comment.js");
@@ -38,20 +39,22 @@ router.get("/:id", function (req, res, next) {
 });
 
 // 추가
-router.post("/", function (req, res, next) {
-    console.log(req.body);
-    const authToken = req.cookies.authToken;
-    console.log("authToken ", authToken);
-    if (authToken) {
-        Board.create(req.body)
-            .then((data) => {
+router.post("/", async function (req, res, next) {
+    try {
+        const authToken = req.cookies.authToken;
+        if (authToken) {
+            const decodedToken = verifyToken(authToken);
+            const userId = decodedToken._id;
+            req.body.author = userId;
+
+            Board.create(req.body).then((data) => {
                 res.json(data);
-            })
-            .catch((err) => {
-                return next(err);
             });
-    } else {
-        res.status(401).send("Bad Request 로그인이 필요합니다.");
+        } else {
+            res.status(401).send("Bad Request: 로그인이 필요합니다.");
+        }
+    } catch (err) {
+        return next(err);
     }
 });
 
