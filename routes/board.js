@@ -146,18 +146,31 @@ router.get("/:id/comment", function (req, res, next) {
 
 // 추가
 router.post("/:id/comment", function (req, res, next) {
-    const boardId = req.params.id;
-    Board.findById(boardId).then((data) =>
-        Comment.create({
-            ...req.body,
-            boardId: data._id,
-        })
-            .then((comment) => {
-                res.json(comment);
-            })
-            .catch((error) => {
-                console.error(error);
-            })
-    );
+    try {
+        const authToken = req.cookies.authToken;
+        if (authToken) {
+            const decodedToken = verifyToken(authToken);
+            const userId = decodedToken._id;
+            const boardId = req.params.id;
+
+            req.body.author = userId;
+            req.body.boardId = boardId;
+
+            Board.findById(boardId).then((data) => {
+                if (!data)
+                    return res
+                        .status(404)
+                        .json({ message: "게시글을 찾을 수 없습니다." });
+
+                Comment.create(req.body).then((comment) => {
+                    res.json(comment);
+                });
+            });
+        } else {
+            res.status(401).send("Bad Request: 로그인이 필요합니다.");
+        }
+    } catch (err) {
+        return next(err);
+    }
 });
 module.exports = router;
