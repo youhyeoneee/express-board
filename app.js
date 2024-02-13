@@ -1,30 +1,31 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-// const cors = require("cors");
+const cors = require("cors");
 const session = require("express-session");
 
-dotenv.config();
-
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+const indexRouter = require("./routes/index");
+const usersRouter = require("./routes/users");
 const boardRouter = require("./routes/board");
 const birdsRouter = require("./routes/birds");
 const commentRouter = require("./routes/comment");
 const movieRouter = require("./routes/movie");
 const todoRouter = require("./routes/todo");
 
-var app = express();
+dotenv.config();
+const app = express();
 
 app.use(logger("dev"));
-app.use(express.json());
+
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(cors());
 
 app.use(
     session({
@@ -54,12 +55,13 @@ app.use(function (req, res, next) {
 });
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
-app.use("/board", boardRouter);
+app.use("/api", usersRouter);
+app.use("/api/board", boardRouter);
 app.use("/birds", birdsRouter);
-app.use("/comment", commentRouter);
+app.use("/api/comment", commentRouter);
 app.use("/movie", movieRouter);
 app.use("/todo", todoRouter);
+
 app.get("/sample", function (req, res) {
     res.send("Sample");
 });
