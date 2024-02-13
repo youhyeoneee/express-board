@@ -90,21 +90,36 @@ router.put("/:id", function (req, res, next) {
 
 // 삭제
 router.delete("/:id", function (req, res, next) {
-    const boardId = req.params.id;
+    try {
+        const authToken = req.cookies.authToken;
+        if (authToken) {
+            const decodedToken = verifyToken(authToken);
+            const userId = decodedToken._id;
 
-    console.log("delete", req.params.id);
-    Board.findByIdAndDelete(boardId)
-        .then((data) => {
-            if (!data)
-                return res
-                    .status(404)
-                    .json({ message: "게시글을 찾을 수 없습니다." });
+            const boardId = req.params.id;
+            Board.findById(boardId).then((data) => {
+                if (!data)
+                    return res
+                        .status(404)
+                        .json({ message: "게시글을 찾을 수 없습니다." });
 
-            res.json(data);
-        })
-        .catch((err) => {
-            return next(err);
-        });
+                if (data.author != userId) {
+                    return res
+                        .status(401)
+                        .send("Bad Request: 다른 유저입니다.");
+                }
+
+                Board.deleteOne({ _id: boardId }).then((data) => {
+                    console.log("delete", boardId);
+                    res.json(data);
+                });
+            });
+        } else {
+            res.status(401).send("Bad Request: 로그인이 필요합니다.");
+        }
+    } catch (err) {
+        return next(err);
+    }
 });
 
 // 보드의 댓글들 조회
