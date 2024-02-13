@@ -72,13 +72,23 @@ router.put("/:id", function (req, res, next) {
             const updatedData = req.body;
 
             console.log("update", boardId, updatedData);
-            Board.findByIdAndUpdate(boardId, updatedData).then((data) => {
+
+            Board.findById(boardId).then((data) => {
                 if (!data)
                     return res
                         .status(404)
                         .json({ message: "게시글을 찾을 수 없습니다." });
 
-                res.json(data);
+                if (data.author != userId) {
+                    return res
+                        .status(401)
+                        .send("Bad Request: 다른 유저입니다.");
+                }
+
+                Board.updateOne({ _id: boardId }, updatedData).then((data) => {
+                    console.log("update", boardId);
+                    res.json(data);
+                });
             });
         } else {
             res.status(401).send("Bad Request: 로그인이 필요합니다.");
