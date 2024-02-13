@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const { verifyToken } = require("../utils/auth");
 
 let Comment = require("../model/Comment");
 
@@ -32,21 +33,39 @@ router.get("/", function (req, res, next) {
 
 // 수정
 router.put("/:id", function (req, res, next) {
-    const commentId = req.params.id;
-    const updatedData = req.body;
+    try {
+        const authToken = req.cookies.authToken;
+        if (authToken) {
+            const decodedToken = verifyToken(authToken);
+            const userId = decodedToken._id;
 
-    console.log("update", commentId, updatedData);
-    Comment.findByIdAndUpdate(commentId, updatedData)
-        .then((data) => {
-            if (!data)
-                return res
-                    .status(404)
-                    .json({ message: "댓글을 찾을 수 없습니다." });
-            res.json(data);
-        })
-        .catch((err) => {
-            return next(err);
-        });
+            const commentId = req.params.id;
+            req.body.updatedAt = Date.now();
+            const updatedData = req.body;
+
+            Comment.findById(commentId).then((data) => {
+                if (!data)
+                    return res
+                        .status(404)
+                        .json({ message: "댓글을 찾을 수 없습니다." });
+
+                if (data.author != userId) {
+                    return res
+                        .status(401)
+                        .send("Bad Request: 다른 유저입니다.");
+                }
+
+                data.updateOne(updatedData).then((data) => {
+                    console.log("update", commentId, updatedData);
+                    res.json(data);
+                });
+            });
+        } else {
+            res.status(401).send("Bad Request: 로그인이 필요합니다.");
+        }
+    } catch (err) {
+        return next(err);
+    }
 });
 
 // 삭제
