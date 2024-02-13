@@ -85,7 +85,7 @@ router.put("/:id", function (req, res, next) {
                         .send("Bad Request: 다른 유저입니다.");
                 }
 
-                Board.updateOne({ _id: boardId }, updatedData).then((data) => {
+                data.updateOne(updatedData).then((data) => {
                     console.log("update", boardId);
                     res.json(data);
                 });
@@ -119,7 +119,7 @@ router.delete("/:id", function (req, res, next) {
                         .send("Bad Request: 다른 유저입니다.");
                 }
 
-                Board.deleteOne({ _id: boardId }).then((data) => {
+                data.deleteOne().then((data) => {
                     console.log("delete", boardId);
                     res.json(data);
                 });
