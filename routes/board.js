@@ -60,22 +60,32 @@ router.post("/", async function (req, res, next) {
 
 // 수정
 router.put("/:id", function (req, res, next) {
-    const boardId = req.params.id;
-    const updatedData = req.body;
+    try {
+        const authToken = req.cookies.authToken;
+        if (authToken) {
+            const decodedToken = verifyToken(authToken);
+            const userId = decodedToken._id;
+            req.body.author = userId;
+            req.body.updatedAt = Date.now();
 
-    console.log("update", boardId, updatedData);
-    Board.findByIdAndUpdate(boardId, updatedData)
-        .then((data) => {
-            if (!data)
-                return res
-                    .status(404)
-                    .json({ message: "게시글을 찾을 수 없습니다." });
+            const boardId = req.params.id;
+            const updatedData = req.body;
 
-            res.json(data);
-        })
-        .catch((err) => {
-            return next(err);
-        });
+            console.log("update", boardId, updatedData);
+            Board.findByIdAndUpdate(boardId, updatedData).then((data) => {
+                if (!data)
+                    return res
+                        .status(404)
+                        .json({ message: "게시글을 찾을 수 없습니다." });
+
+                res.json(data);
+            });
+        } else {
+            res.status(401).send("Bad Request: 로그인이 필요합니다.");
+        }
+    } catch (err) {
+        return next(err);
+    }
 });
 
 // 삭제
