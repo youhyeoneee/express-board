@@ -5,8 +5,18 @@ const { head } = require("../app");
 var router = express.Router();
 
 /* GET users listing. */
-router.get("/", function (req, res, next) {
+router.get("/user", function (req, res, next) {
     User.find()
+        .then((data) => {
+            res.json(data);
+        })
+        .catch((err) => {
+            return next(err);
+        });
+});
+
+router.get("/user/:id", function (req, res, next) {
+    User.findById(req.params.id)
         .then((data) => {
             res.json(data);
         })
